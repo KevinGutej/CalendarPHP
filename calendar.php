@@ -6,6 +6,7 @@ function build_calendar($month, $year) {
     $dateComponents = getdate($firstDayOfMonth);
     $monthName = $dateComponents['month'];
     $dayOfWeek = $dateComponents['wday'];
+
     $calendar = "<table>";
     $calendar .= "<caption>$monthName $year</caption>";
     $calendar .= "<tr>";
@@ -23,6 +24,11 @@ function build_calendar($month, $year) {
     }
 
     $currentDay = 1;
+    $todayDate = date('Y-m-d');
+    $events = array(
+        '2024-06-14' => 'Event 1',
+        '2024-06-18' => 'Event 2'
+    );
 
     while ($currentDay <= $numberDays) {
         if ($dayOfWeek == 7) {
@@ -30,7 +36,18 @@ function build_calendar($month, $year) {
             $calendar .= "</tr><tr>";
         }
 
-        $calendar .= "<td></td>";
+        $currentDate = "$year-$month-" . str_pad($currentDay, 2, "0", STR_PAD_LEFT);
+        $class = ($currentDate == $todayDate) ? 'today' : '';
+        $class .= isset($events[$currentDate]) ? ' event' : '';
+
+        $calendar .= "<td class='$class'>$currentDay";
+
+        if (isset($events[$currentDate])) {
+            $calendar .= "<br>" . $events[$currentDate];
+        }
+
+        $calendar .= "</td>";
+
         $currentDay++;
         $dayOfWeek++;
     }
@@ -46,15 +63,6 @@ function build_calendar($month, $year) {
     $calendar .= "</table>";
 
     return $calendar;
-}
-
-if (isset($_GET['month']) && isset($_GET['year'])) {
-    $month = $_GET['month'];
-    $year = $_GET['year'];
-} else {
-    $currentDate = getdate();
-    $month = $currentDate['mon'];
-    $year = $currentDate['year'];
 }
 
 echo build_calendar($month, $year);
