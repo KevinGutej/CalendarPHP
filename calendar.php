@@ -40,13 +40,8 @@ function build_calendar($month, $year) {
         $class = ($currentDate == $todayDate) ? 'today' : '';
         $class .= isset($events[$currentDate]) ? ' event' : '';
 
-        $calendar .= "<td class='$class'>$currentDay";
-
-        if (isset($events[$currentDate])) {
-            $calendar .= "<br>" . $events[$currentDate];
-        }
-
-        $calendar .= "</td>";
+        $eventText = isset($events[$currentDate]) ? ' data-event="' . $events[$currentDate] . '"' : '';
+        $calendar .= "<td class='$class' $eventText>$currentDay</td>";
 
         $currentDay++;
         $dayOfWeek++;

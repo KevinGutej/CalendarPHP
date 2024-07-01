@@ -17,7 +17,7 @@
         }
         .calendar-container {
             width: 80%;
-            max-width: 600px;
+            max-width: 800px;
             background: #fff;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -44,39 +44,49 @@
         td {
             background-color: #fff;
             vertical-align: top;
+            position: relative;
         }
         .today {
             background-color: #ffeb3b;
         }
         .event {
             background-color: #ffecb3;
-            position: relative;
+            cursor: pointer;
         }
-        .event::after {
-            content: '';
-            display: block;
-            width: 8px;
-            height: 8px;
-            background: #f44336;
-            border-radius: 50%;
+        .event:hover::after {
+            content: attr(data-event);
             position: absolute;
-            top: 5px;
-            right: 5px;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            white-space: nowrap;
+            z-index: 1;
         }
         .navigation {
             text-align: center;
             margin-bottom: 20px;
         }
-        .navigation a {
-            text-decoration: none;
-            color: #333;
-            background-color: #e0e0e0;
-            padding: 10px 15px;
+        .navigation select {
+            padding: 10px;
             border-radius: 4px;
+            border: 1px solid #ddd;
+            margin: 0 10px;
+        }
+        .navigation button {
+            padding: 10px 15px;
+            border: none;
+            background-color: #333;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
             transition: background-color 0.3s;
         }
-        .navigation a:hover {
-            background-color: #d5d5d5;
+        .navigation button:hover {
+            background-color: #555;
         }
     </style>
 </head>
@@ -103,12 +113,33 @@
                 $nextYear++;
             }
 
-            echo '<a href="?month=' . $prevMonth . '&year=' . $prevYear . '">&laquo; Previous</a>';
-            echo ' | ';
-            echo '<a href="?month=' . $nextMonth . '&year=' . $nextYear . '">Next &raquo;</a>';
+            echo '<button onclick="navigateToMonth(' . $prevMonth . ', ' . $prevYear . ')">&laquo; Previous</button>';
+            echo '<select id="month" onchange="changeDate()">';
+            for ($m = 1; $m <= 12; $m++) {
+                $selected = ($m == $month) ? 'selected' : '';
+                echo '<option value="' . $m . '" ' . $selected . '>' . date('F', mktime(0, 0, 0, $m, 10)) . '</option>';
+            }
+            echo '</select>';
+            echo '<select id="year" onchange="changeDate()">';
+            for ($y = 1970; $y <= 2100; $y++) {
+                $selected = ($y == $year) ? 'selected' : '';
+                echo '<option value="' . $y . '" ' . $selected . '>' . $y . '</option>';
+            }
+            echo '</select>';
+            echo '<button onclick="navigateToMonth(' . $nextMonth . ', ' . $nextYear . ')">Next &raquo;</button>';
             ?>
         </div>
         <?php include 'calendar.php'; ?>
     </div>
+    <script>
+        function navigateToMonth(month, year) {
+            window.location.href = `?month=${month}&year=${year}`;
+        }
+        function changeDate() {
+            const month = document.getElementById('month').value;
+            const year = document.getElementById('year').value;
+            navigateToMonth(month, year);
+        }
+    </script>
 </body>
 </html>
