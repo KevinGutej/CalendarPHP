@@ -45,26 +45,13 @@
             background-color: #fff;
             vertical-align: top;
             position: relative;
+            cursor: pointer;
         }
         .today {
             background-color: #ffeb3b;
         }
         .event {
             background-color: #ffecb3;
-            cursor: pointer;
-        }
-        .event:hover::after {
-            content: attr(data-event);
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #333;
-            color: #fff;
-            padding: 5px 10px;
-            border-radius: 5px;
-            white-space: nowrap;
-            z-index: 1;
         }
         .navigation {
             text-align: center;
@@ -86,6 +73,64 @@
             transition: background-color 0.3s;
         }
         .navigation button:hover {
+            background-color: #555;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fff;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .add-event-form {
+            margin-top: 20px;
+        }
+        .add-event-form input,
+        .add-event-form textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .add-event-form button {
+            padding: 10px 15px;
+            border: none;
+            background-color: #333;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .add-event-form button:hover {
             background-color: #555;
         }
     </style>
@@ -130,6 +175,25 @@
             ?>
         </div>
         <?php include 'calendar.php'; ?>
+        <div class="add-event-form">
+            <h2>Add New Event</h2>
+            <form action="add_event.php" method="post">
+                <label for="date">Date:</label>
+                <input type="date" id="date" name="date" required>
+                <label for="title">Event Title:</label>
+                <input type="text" id="title" name="title" required>
+                <label for="description">Event Description:</label>
+                <textarea id="description" name="description" rows="4" required></textarea>
+                <button type="submit">Add Event</button>
+            </form>
+        </div>
+    </div>
+    <div id="eventModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Event Details</h2>
+            <p id="eventDetails"></p>
+        </div>
     </div>
     <script>
         function navigateToMonth(month, year) {
@@ -139,6 +203,13 @@
             const month = document.getElementById('month').value;
             const year = document.getElementById('year').value;
             navigateToMonth(month, year);
+        }
+        function showModal(eventDetails) {
+            document.getElementById('eventDetails').innerText = eventDetails;
+            document.getElementById('eventModal').style.display = 'flex';
+        }
+        function closeModal() {
+            document.getElementById('eventModal').style.display = 'none';
         }
     </script>
 </body>
