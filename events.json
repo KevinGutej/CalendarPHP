@@ -1,10 +1,14 @@
 {
     "2024-06-14": {
         "title": "Event 1",
-        "description": "Details about event 1"
+        "description": "Details about event 1",
+        "category": "Work",
+        "recurrence": "None"
     },
     "2024-06-18": {
         "title": "Event 2",
-        "description": "Details about event 2"
+        "description": "Details about event 2",
+        "category": "Personal",
+        "recurrence": "None"
     }
-}//Examples
+}

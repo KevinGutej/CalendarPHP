@@ -114,6 +114,7 @@
             margin-top: 20px;
         }
         .add-event-form input,
+        .add-event-form select,
         .add-event-form textarea {
             width: 100%;
             padding: 10px;
@@ -131,6 +132,30 @@
             transition: background-color 0.3s;
         }
         .add-event-form button:hover {
+            background-color: #555;
+        }
+        .edit-event-form {
+            margin-top: 20px;
+        }
+        .edit-event-form input,
+        .edit-event-form select,
+        .edit-event-form textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .edit-event-form button {
+            padding: 10px 15px;
+            border: none;
+            background-color: #333;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .edit-event-form button:hover {
             background-color: #555;
         }
     </style>
@@ -184,32 +209,96 @@
                 <input type="text" id="title" name="title" required>
                 <label for="description">Event Description:</label>
                 <textarea id="description" name="description" rows="4" required></textarea>
+                <label for="category">Category:</label>
+                <select id="category" name="category" required>
+                    <option value="Work">Work</option>
+                    <option value="Personal">Personal</option>
+                    <option value="Others">Others</option>
+                </select>
+                <label for="recurrence">Recurrence:</label>
+                <select id="recurrence" name="recurrence" required>
+                    <option value="None">None</option>
+                    <option value="Daily">Daily</option>
+                    <option value="Weekly">Weekly</option>
+                    <option value="Monthly">Monthly</option>
+                    <option value="Yearly">Yearly</option>
+                </select>
                 <button type="submit">Add Event</button>
+            </form>
+        </div>
+        <div id="editEventForm" class="edit-event-form" style="display: none;">
+            <h2>Edit Event</h2>
+            <form action="edit_event.php" method="post">
+                <input type="hidden" id="editDate" name="date">
+                <label for="editTitle">Event Title:</label>
+                <input type="text" id="editTitle" name="title" required>
+                <label for="editDescription">Event Description:</label>
+                <textarea id="editDescription" name="description" rows="4" required></textarea>
+                <label for="editCategory">Category:</label>
+                <select id="editCategory" name="category" required>
+                    <option value="Work">Work</option>
+                    <option value="Personal">Personal</option>
+                    <option value="Others">Others</option>
+                </select>
+                <label for="editRecurrence">Recurrence:</label>
+                <select id="editRecurrence" name="recurrence" required>
+                    <option value="None">None</option>
+                    <option value="Daily">Daily</option>
+                    <option value="Weekly">Weekly</option>
+                    <option value="Monthly">Monthly</option>
+                    <option value="Yearly">Yearly</option>
+                </select>
+                <button type="submit">Save Changes</button>
             </form>
         </div>
     </div>
     <div id="eventModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal()">&times;</span>
-            <h2>Event Details</h2>
-            <p id="eventDetails"></p>
+            <h2 id="eventTitle"></h2>
+            <p id="eventDescription"></p>
+            <p id="eventCategory"></p>
+            <p id="eventRecurrence"></p>
+            <button onclick="showEditForm()">Edit</button>
+            <button onclick="deleteEvent()">Delete</button>
         </div>
     </div>
     <script>
-        function navigateToMonth(month, year) {
-            window.location.href = `?month=${month}&year=${year}`;
-        }
         function changeDate() {
-            const month = document.getElementById('month').value;
-            const year = document.getElementById('year').value;
-            navigateToMonth(month, year);
+            var month = document.getElementById('month').value;
+            var year = document.getElementById('year').value;
+            window.location.href = `index.php?month=${month}&year=${year}`;
         }
-        function showModal(eventDetails) {
-            document.getElementById('eventDetails').innerText = eventDetails;
+
+        function navigateToMonth(month, year) {
+            window.location.href = `index.php?month=${month}&year=${year}`;
+        }
+
+        function showModal(eventTitle, eventDescription, eventCategory, eventRecurrence, eventDate) {
+            document.getElementById('eventTitle').innerText = eventTitle;
+            document.getElementById('eventDescription').innerText = eventDescription;
+            document.getElementById('eventCategory').innerText = 'Category: ' + eventCategory;
+            document.getElementById('eventRecurrence').innerText = 'Recurrence: ' + eventRecurrence;
+            document.getElementById('editDate').value = eventDate;
+            document.getElementById('editTitle').value = eventTitle;
+            document.getElementById('editDescription').value = eventDescription;
+            document.getElementById('editCategory').value = eventCategory;
+            document.getElementById('editRecurrence').value = eventRecurrence;
             document.getElementById('eventModal').style.display = 'flex';
         }
+
         function closeModal() {
             document.getElementById('eventModal').style.display = 'none';
+        }
+
+        function showEditForm() {
+            document.getElementById('editEventForm').style.display = 'block';
+            closeModal();
+        }
+
+        function deleteEvent() {
+            var date = document.getElementById('editDate').value;
+            window.location.href = `delete_event.php?date=${date}`;
         }
     </script>
 </body>
