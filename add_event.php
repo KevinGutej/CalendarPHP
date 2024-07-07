@@ -1,5 +1,6 @@
 <?php
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+session_start();
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['username'])) {
     $date = $_POST['date'];
     $title = $_POST['title'];
     $description = $_POST['description'];

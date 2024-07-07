@@ -37,12 +37,13 @@ function build_calendar($month, $year) {
 
         $currentDate = "$year-$month-" . str_pad($currentDay, 2, "0", STR_PAD_LEFT);
         $class = ($currentDate == $todayDate) ? 'today' : '';
-        $class .= isset($events[$currentDate]) ? ' event' : '';
 
         $eventDetails = '';
-        if (isset($events[$currentDate])) {
-            $event = $events[$currentDate];
-            $eventDetails = ' onclick="showModal(\'' . $event['title'] . '\', \'' . $event['description'] . '\', \'' . $event['category'] . '\', \'' . $event['recurrence'] . '\', \'' . $currentDate . '\')"';
+        foreach ($events as $eventDate => $event) {
+            if ($eventDate == $currentDate || isRecurringEvent($eventDate, $event['recurrence'], $currentDate)) {
+                $class .= ' ' . strtolower($event['category']);
+                $eventDetails = ' onclick="showModal(\'' . $event['title'] . '\', \'' . $event['description'] . '\', \'' . $event['category'] . '\', \'' . $event['recurrence'] . '\', \'' . $currentDate . '\')"';
+            }
         }
 
         $calendar .= "<td class='$class' $eventDetails>$currentDay</td>";
@@ -62,6 +63,22 @@ function build_calendar($month, $year) {
     $calendar .= "</table>";
 
     return $calendar;
+}
+
+function isRecurringEvent($eventDate, $recurrence, $currentDate) {
+    $eventDate = new DateTime($eventDate);
+    $currentDate = new DateTime($currentDate);
+
+    if ($recurrence == 'Daily') {
+        return $eventDate <= $currentDate;
+    } elseif ($recurrence == 'Weekly') {
+        return $eventDate <= $currentDate && $eventDate->format('w') == $currentDate->format('w');
+    } elseif ($recurrence == 'Monthly') {
+        return $eventDate <= $currentDate && $eventDate->format('d') == $currentDate->format('d');
+    } elseif ($recurrence == 'Yearly') {
+        return $eventDate <= $currentDate && $eventDate->format('m-d') == $currentDate->format('m-d');
+    }
+    return false;
 }
 
 echo build_calendar($month, $year);

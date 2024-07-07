@@ -1,3 +1,29 @@
+<?php
+session_start();
+$loggedIn = isset($_SESSION['username']);
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
+    $username = $_POST['username'];
+    $password = $_POST['password'];
+
+    if ($username === 'admin' && $password === 'password') {
+        $_SESSION['username'] = $username;
+        $loggedIn = true;
+    } else {
+        $error = 'Invalid username or password';
+    }
+}
+
+if (isset($_GET['logout'])) {
+    session_destroy();
+    header('Location: index.php');
+}
+
+$currentDate = getdate();
+$month = isset($_GET['month']) ? $_GET['month'] : $currentDate['mon'];
+$year = isset($_GET['year']) ? $_GET['year'] : $currentDate['year'];
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -52,6 +78,15 @@
         }
         .event {
             background-color: #ffecb3;
+        }
+        .work {
+            background-color: #8bc34a;
+        }
+        .personal {
+            background-color: #03a9f4;
+        }
+        .others {
+            background-color: #ff9800;
         }
         .navigation {
             text-align: center;
@@ -158,82 +193,113 @@
         .edit-event-form button:hover {
             background-color: #555;
         }
+        .login-form {
+            text-align: center;
+        }
+        .login-form input {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .login-form button {
+            padding: 10px 15px;
+            border: none;
+            background-color: #333;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .login-form button:hover {
+            background-color: #555;
+        }
     </style>
 </head>
 <body>
     <div class="calendar-container">
         <h1>PHP Calendar</h1>
-        <div class="navigation">
-            <?php
-            $currentDate = getdate();
-            $month = isset($_GET['month']) ? $_GET['month'] : $currentDate['mon'];
-            $year = isset($_GET['year']) ? $_GET['year'] : $currentDate['year'];
-            $prevMonth = $month - 1;
-            $nextMonth = $month + 1;
-            $prevYear = $year;
-            $nextYear = $year;
+        <?php if (!$loggedIn): ?>
+            <div class="login-form">
+                <h2>Login</h2>
+                <?php if (isset($error)): ?>
+                    <p style="color: red;"><?= $error ?></p>
+                <?php endif; ?>
+                <form action="index.php" method="post">
+                    <input type="text" name="username" placeholder="Username" required>
+                    <input type="password" name="password" placeholder="Password" required>
+                    <button type="submit" name="login">Login</button>
+                </form>
+            </div>
+        <?php else: ?>
+            <p>Welcome, <?= $_SESSION['username'] ?>! <a href="?logout">Logout</a></p>
+            <div class="navigation">
+                <?php
+                $prevMonth = $month - 1;
+                $nextMonth = $month + 1;
+                $prevYear = $year;
+                $nextYear = $year;
 
-            if ($prevMonth == 0) {
-                $prevMonth = 12;
-                $prevYear--;
-            }
+                if ($prevMonth == 0) {
+                    $prevMonth = 12;
+                    $prevYear--;
+                }
 
-            if ($nextMonth == 13) {
-                $nextMonth = 1;
-                $nextYear++;
-            }
+                if ($nextMonth == 13) {
+                    $nextMonth = 1;
+                    $nextYear++;
+                }
 
-            echo '<button onclick="navigateToMonth(' . $prevMonth . ', ' . $prevYear . ')">&laquo; Previous</button>';
-            echo '<select id="month" onchange="changeDate()">';
-            for ($m = 1; $m <= 12; $m++) {
-                $selected = ($m == $month) ? 'selected' : '';
-                echo '<option value="' . $m . '" ' . $selected . '>' . date('F', mktime(0, 0, 0, $m, 10)) . '</option>';
-            }
-            echo '</select>';
-            echo '<select id="year" onchange="changeDate()">';
-            for ($y = 1970; $y <= 2100; $y++) {
-                $selected = ($y == $year) ? 'selected' : '';
-                echo '<option value="' . $y . '" ' . $selected . '>' . $y . '</option>';
-            }
-            echo '</select>';
-            echo '<button onclick="navigateToMonth(' . $nextMonth . ', ' . $nextYear . ')">Next &raquo;</button>';
-            ?>
-        </div>
-        <?php include 'calendar.php'; ?>
-        <div class="add-event-form">
-            <h2>Add New Event</h2>
-            <form action="add_event.php" method="post">
-                <label for="date">Date:</label>
-                <input type="date" id="date" name="date" required>
-                <label for="title">Event Title:</label>
-                <input type="text" id="title" name="title" required>
-                <label for="description">Event Description:</label>
-                <textarea id="description" name="description" rows="4" required></textarea>
-                <label for="category">Category:</label>
-                <select id="category" name="category" required>
-                    <option value="Work">Work</option>
-                    <option value="Personal">Personal</option>
-                    <option value="Others">Others</option>
-                </select>
-                <label for="recurrence">Recurrence:</label>
-                <select id="recurrence" name="recurrence" required>
-                    <option value="None">None</option>
-                    <option value="Daily">Daily</option>
-                    <option value="Weekly">Weekly</option>
-                    <option value="Monthly">Monthly</option>
-                    <option value="Yearly">Yearly</option>
-                </select>
-                <button type="submit">Add Event</button>
-            </form>
-        </div>
-        <div id="editEventForm" class="edit-event-form" style="display: none;">
+                echo '<button onclick="navigateToMonth(' . $prevMonth . ', ' . $prevYear . ')">&laquo; Previous</button>';
+                echo '<select id="month" onchange="changeDate()">';
+                for ($m = 1; $m <= 12; $m++) {
+                    $selected = ($m == $month) ? 'selected' : '';
+                    echo '<option value="' . $m . '" ' . $selected . '>' . date('F', mktime(0, 0, 0, $m, 10)) . '</option>';
+                }
+                echo '</select>';
+                echo '<select id="year" onchange="changeDate()">';
+                for ($y = 1970; $y <= 2100; $y++) {
+                    $selected = ($y == $year) ? 'selected' : '';
+                    echo '<option value="' . $y . '" ' . $selected . '>' . $y . '</option>';
+                }
+                echo '</select>';
+                echo '<button onclick="navigateToMonth(' . $nextMonth . ', ' . $nextYear . ')">Next &raquo;</button>';
+                ?>
+            </div>
+            <?php include 'calendar.php'; ?>
+            <div class="add-event-form">
+                <h2>Add New Event</h2>
+                <form action="add_event.php" method="post">
+                    <input type="date" name="date" required>
+                    <input type="text" name="title" placeholder="Event Title" required>
+                    <textarea name="description" placeholder="Event Description" required></textarea>
+                    <label for="category">Category:</label>
+                    <select id="category" name="category" required>
+                        <option value="Work">Work</option>
+                        <option value="Personal">Personal</option>
+                        <option value="Others">Others</option>
+                    </select>
+                    <label for="recurrence">Recurrence:</label>
+                    <select id="recurrence" name="recurrence" required>
+                        <option value="None">None</option>
+                        <option value="Daily">Daily</option>
+                        <option value="Weekly">Weekly</option>
+                        <option value="Monthly">Monthly</option>
+                        <option value="Yearly">Yearly</option>
+                    </select>
+                    <button type="submit">Add Event</button>
+                </form>
+            </div>
+        <?php endif; ?>
+    </div>
+    <div id="editEventForm" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
             <h2>Edit Event</h2>
             <form action="edit_event.php" method="post">
-                <input type="hidden" id="editDate" name="date">
-                <label for="editTitle">Event Title:</label>
-                <input type="text" id="editTitle" name="title" required>
-                <label for="editDescription">Event Description:</label>
-                <textarea id="editDescription" name="description" rows="4" required></textarea>
+                <input type="hidden" id="editDate" name="date" required>
+                <input type="text" id="editTitle" name="title" placeholder="Event Title" required>
+                <textarea id="editDescription" name="description" placeholder="Event Description" required></textarea>
                 <label for="editCategory">Category:</label>
                 <select id="editCategory" name="category" required>
                     <option value="Work">Work</option>
