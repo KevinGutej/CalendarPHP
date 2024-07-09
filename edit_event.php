@@ -9,14 +9,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['username'])) {
 
     $events = json_decode(file_get_contents('events.json'), true);
 
-    $events[$date] = [
-        'title' => $title,
-        'description' => $description,
-        'category' => $category,
-        'recurrence' => $recurrence
-    ];
+    if (isset($events[$date])) {
+        $events[$date] = [
+            'title' => $title,
+            'description' => $description,
+            'category' => $category,
+            'recurrence' => $recurrence
+        ];
 
-    file_put_contents('events.json', json_encode($events));
+        file_put_contents('events.json', json_encode($events));
+    }
 
     header('Location: index.php');
 }
