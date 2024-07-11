@@ -218,6 +218,18 @@ $filterRecurrence = isset($_GET['filterRecurrence']) ? $_GET['filterRecurrence']
         .login-form button:hover {
             background-color: #555;
         }
+        .tooltip {
+            display: none;
+            position: absolute;
+            background-color: #333;
+            color: #fff;
+            padding: 5px;
+            border-radius: 4px;
+            z-index: 1000;
+        }
+        .event:hover .tooltip {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -289,6 +301,7 @@ $filterRecurrence = isset($_GET['filterRecurrence']) ? $_GET['filterRecurrence']
                     <option value="Monthly" <?= $filterRecurrence == 'Monthly' ? 'selected' : '' ?>>Monthly</option>
                     <option value="Yearly" <?= $filterRecurrence == 'Yearly' ? 'selected' : '' ?>>Yearly</option>
                 </select>
+                <button onclick="exportToCSV()">Export to CSV</button>
             </div>
             <div id="calendar">
                 <?php include 'calendar.php'; ?>
@@ -313,6 +326,10 @@ $filterRecurrence = isset($_GET['filterRecurrence']) ? $_GET['filterRecurrence']
                         <option value="Monthly">Monthly</option>
                         <option value="Yearly">Yearly</option>
                     </select>
+                    <label for="attendees">Attendees (comma separated emails):</label>
+                    <input type="text" id="attendees" name="attendees">
+                    <label for="reminder">Set Reminder (minutes before event):</label>
+                    <input type="number" id="reminder" name="reminder" min="0" placeholder="e.g., 10">
                     <button type="submit">Add Event</button>
                 </form>
             </div>
@@ -338,6 +355,10 @@ $filterRecurrence = isset($_GET['filterRecurrence']) ? $_GET['filterRecurrence']
                             <option value="Monthly">Monthly</option>
                             <option value="Yearly">Yearly</option>
                         </select>
+                        <label for="editAttendees">Attendees (comma separated emails):</label>
+                        <input type="text" id="editAttendees" name="attendees">
+                        <label for="editReminder">Set Reminder (minutes before event):</label>
+                        <input type="number" id="editReminder" name="reminder" min="0">
                         <button type="submit">Save Changes</button>
                     </form>
                 </div>
@@ -349,6 +370,8 @@ $filterRecurrence = isset($_GET['filterRecurrence']) ? $_GET['filterRecurrence']
                     <p id="eventDescription"></p>
                     <p id="eventCategory"></p>
                     <p id="eventRecurrence"></p>
+                    <p id="eventAttendees"></p>
+                    <p id="eventReminder"></p>
                     <button onclick="showEditForm()">Edit</button>
                     <button onclick="deleteEvent()">Delete</button>
                 </div>
@@ -395,41 +418,55 @@ $filterRecurrence = isset($_GET['filterRecurrence']) ? $_GET['filterRecurrence']
             window.location.href = `index.php?month=${month}&year=${year}&view=${view}&search=${search}&filterCategory=${filterCategory}&filterRecurrence=${filterRecurrence}`;
         }
 
-        function showModal(eventTitle, eventDescription, eventCategory, eventRecurrence, eventDate) {
+        function showModal(eventTitle, eventDescription, eventCategory, eventRecurrence, eventDate, eventAttendees, eventReminder) {
             document.getElementById('eventTitle').innerText = eventTitle;
             document.getElementById('eventDescription').innerText = eventDescription;
             document.getElementById('eventCategory').innerText = 'Category: ' + eventCategory;
             document.getElementById('eventRecurrence').innerText = 'Recurrence: ' + eventRecurrence;
-            document.getElementById('editDate').value = eventDate;
-            document.getElementById('editTitle').value = eventTitle;
-            document.getElementById('editDescription').value = eventDescription;
-            document.getElementById('editCategory').value = eventCategory;
-            document.getElementById('editRecurrence').value = eventRecurrence;
+            document.getElementById('eventAttendees').innerText = 'Attendees: ' + eventAttendees;
+            document.getElementById('eventReminder').innerText = 'Reminder: ' + eventReminder + ' minutes before';
             document.getElementById('eventModal').style.display = 'flex';
         }
 
         function closeModal() {
             document.getElementById('eventModal').style.display = 'none';
+            document.getElementById('editEventForm').style.display = 'none';
         }
 
         function showEditForm() {
-            document.getElementById('editEventForm').style.display = 'block';
-            closeModal();
+            document.getElementById('editTitle').value = document.getElementById('eventTitle').innerText;
+            document.getElementById('editDescription').value = document.getElementById('eventDescription').innerText;
+            var category = document.getElementById('eventCategory').innerText.replace('Category: ', '');
+            document.getElementById('editCategory').value = category;
+            var recurrence = document.getElementById('eventRecurrence').innerText.replace('Recurrence: ', '');
+            document.getElementById('editRecurrence').value = recurrence;
+            document.getElementById('editAttendees').value = document.getElementById('eventAttendees').innerText.replace('Attendees: ', '');
+            document.getElementById('editReminder').value = document.getElementById('eventReminder').innerText.replace('Reminder: ', '').replace(' minutes before', '');
+            document.getElementById('editEventForm').style.display = 'flex';
         }
 
         function deleteEvent() {
-            var date = document.getElementById('editDate').value;
-            window.location.href = `delete_event.php?date=${date}`;
+            // Implement delete event functionality
         }
 
-        document.addEventListener('DOMContentLoaded', (event) => {
-            const draggableElements = document.querySelectorAll('.event');
-            draggableElements.forEach(element => {
-                element.draggable = true;
-                element.addEventListener('dragstart', handleDragStart);
-                element.addEventListener('dragover', handleDragOver);
-                element.addEventListener('drop', handleDrop);
+        function exportToCSV() {
+            window.location.href = 'export_events.php';
+        }
+
+        document.querySelectorAll('.event').forEach(event => {
+            event.addEventListener('mouseover', e => {
+                const tooltip = event.querySelector('.tooltip');
+                tooltip.style.display = 'block';
             });
+            event.addEventListener('mouseout', e => {
+                const tooltip = event.querySelector('.tooltip');
+                tooltip.style.display = 'none';
+            });
+        });
+
+        document.querySelectorAll('[data-date]').forEach(day => {
+            day.addEventListener('dragover', handleDragOver);
+            day.addEventListener('drop', handleDrop);
         });
 
         function handleDragStart(e) {

@@ -45,14 +45,17 @@ function buildCalendar($month, $year, $view, $events, $search, $filterCategory, 
             $calendar .= "<td data-date='$currentDate' class='$class'>";
             $calendar .= "<div>$currentDay</div>";
 
-            if (isset($events[$currentDate])) {
-                foreach ($events[$currentDate] as $event) {
-                    if (($search && stripos($event['title'], $search) === false && stripos($event['description'], $search) === false) ||
-                        ($filterCategory && $event['category'] !== $filterCategory) ||
-                        ($filterRecurrence && $event['recurrence'] !== $filterRecurrence)) {
-                        continue;
+            foreach ($events as $eventDate => $eventArray) {
+                if ($eventDate == $currentDate || checkRecurrence($eventArray['recurrence'], $eventDate, $currentDate)) {
+                    foreach ($eventArray as $event) {
+                        if (($search && stripos($event['title'], $search) === false && stripos($event['description'], $search) === false) ||
+                            ($filterCategory && $event['category'] !== $filterCategory) ||
+                            ($filterRecurrence && $event['recurrence'] !== $filterRecurrence)) {
+                            continue;
+                        }
+                        $tooltip = "<div class='tooltip'>{$event['description']}</div>";
+                        $calendar .= "<div class='event {$event['category']}' id='event-$currentDate' draggable='true' ondragstart='handleDragStart(event)' onclick='showModal(\"{$event['title']}\", \"{$event['description']}\", \"{$event['category']}\", \"{$event['recurrence']}\", \"$currentDate\", \"{$event['attendees']}\", \"{$event['reminder']}\")'>{$event['title']} $tooltip</div>";
                     }
-                    $calendar .= "<div class='event {$event['category']}' id='event-$currentDate' draggable='true' ondragstart='handleDragStart(event)' onclick='showModal(\"{$event['title']}\", \"{$event['description']}\", \"{$event['category']}\", \"{$event['recurrence']}\", \"$currentDate\")'>{$event['title']}</div>";
                 }
             }
 
@@ -76,6 +79,25 @@ function buildCalendar($month, $year, $view, $events, $search, $filterCategory, 
     }
 
     return $calendar;
+}
+
+function checkRecurrence($recurrence, $eventDate, $currentDate) {
+    if ($recurrence == 'None') return false;
+
+    $eventTimestamp = strtotime($eventDate);
+    $currentTimestamp = strtotime($currentDate);
+
+    switch ($recurrence) {
+        case 'Daily':
+            return ($currentTimestamp > $eventTimestamp);
+        case 'Weekly':
+            return (($currentTimestamp - $eventTimestamp) % (7 * 24 * 60 * 60) == 0);
+        case 'Monthly':
+            return (date('d', $eventTimestamp) == date('d', $currentTimestamp));
+        case 'Yearly':
+            return (date('m-d', $eventTimestamp) == date('m-d', $currentTimestamp));
+    }
+    return false;
 }
 
 $events = json_decode(file_get_contents('events.json'), true);

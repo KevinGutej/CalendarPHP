@@ -6,14 +6,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['username'])) {
     $description = $_POST['description'];
     $category = $_POST['category'];
     $recurrence = $_POST['recurrence'];
+    $attendees = $_POST['attendees'];
+    $reminder = $_POST['reminder'];
 
     $events = json_decode(file_get_contents('events.json'), true);
 
-    $events[$date] = [
+    $events[$date][] = [
         'title' => $title,
         'description' => $description,
         'category' => $category,
-        'recurrence' => $recurrence
+        'recurrence' => $recurrence,
+        'attendees' => $attendees,
+        'reminder' => $reminder
     ];
 
     file_put_contents('events.json', json_encode($events));
